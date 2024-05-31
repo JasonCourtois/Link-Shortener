@@ -3,17 +3,17 @@ import axios from "axios";
 import { useEffect } from "react";
 
 const Forward = () => {
-    const { link } = useParams();
+    const { id: id } = useParams();
 
     useEffect(() => {
-        axios.get("http://localhost:4000/" + link).then((res) => {
+        axios.get("http://localhost:4000/" + id).then((res) => {
             window.location.href = res.data
         }).catch(() => {
             window.location.href = "/"
         })
     }, [])
 
-    return <></>;
+    return null;
 }
 
 export default Forward;

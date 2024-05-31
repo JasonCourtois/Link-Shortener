@@ -4,8 +4,12 @@ import Test from "./Title.tsx";
 function Home() {
   return (
     <>
-      <Test />
-      <TextBox />
+      <div className="parent">
+        <div className="container">
+          <Test />
+          <TextBox />
+        </div>
+      </div>
     </>
   );
 }

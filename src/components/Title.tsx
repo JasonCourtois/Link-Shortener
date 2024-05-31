@@ -1,5 +1,5 @@
 function Title() {
-  return <h1>Link Shortnerer</h1>;
+  return <h1>Link Shortener</h1>;
 }
 
 export default Title;

@@ -11,7 +11,7 @@ const database = mysql.createConnection({
 });
 database.connect();
 
-const generateLink = () => {
+const generateId = () => {
   const chars =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
   let result = "";
@@ -22,31 +22,48 @@ const generateLink = () => {
 };
 
 router.get("/:link", (req, res) => {
-  const link = req.url.slice(1);
-  if (link.length !== 4) {
+  const id = req.url.slice(1);
+  if (id.length !== 4) {
     return res.status(400).send("Invalid link entered.");
   }
 
   database.query(
-    `SELECT link from links where id = '${link}'`,
+    `SELECT link, clicks from links where id = '${id}'`,
     function (err, results) {
       if (err) throw err;
       if (results.length === 0) {
         return res.status(400).send("Invalid link entered.");
       }
+
+      database.query(
+        `UPDATE links SET clicks = ${results[0].clicks + 1} WHERE ID = "${id}"`,
+        function (err) {
+          if (err) throw err;
+        }
+      );
+
       return res.send(results[0].link);
     }
   );
 });
 
 router.post("/shorten", (req, res) => {
-  const { link } = req.body;
+  let { link } = req.body;
+
+  if (!link.match(/^(http|https):\/\//)) {
+    link = "https://" + link;
+  }
+
+  if (!link.match(/^(http|https):\/\/(?:www\.)?([a-zA-Z0-9-]{1,63}\.){1,127}(?:[a-zA-Z]{2,63})(?:\/[^\s]*)?/)) {
+    return res.status(400).send("Invalid URL entered.")
+  }
 
   let id;
   let unique = true;
 
   do {
-    id = generateLink();
+    unique = true;
+    id = generateId();
     database.query(
       `SELECT count(*) as count from links where id = '${id}'`,
       function (err, results) {
@@ -60,7 +77,7 @@ router.post("/shorten", (req, res) => {
 
   const sql = `INSERT INTO links (id, link) VALUES ("${id}", "${link}")`;
   database.query(sql);
-  res.send("short.com/" + id);
+  res.send(id);
 });
 
 module.exports = router;
